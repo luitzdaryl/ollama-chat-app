@@ -305,7 +305,7 @@ async function sendMessage() {
   font-weight: 700;
   padding: 8px 10px;
   border: 1px solid var(--color-border);
-  background: var(--color-surface-alt);
+  background: rgba(255, 154, 0, 0.12);
 }
 
 .bubble :deep(td) {

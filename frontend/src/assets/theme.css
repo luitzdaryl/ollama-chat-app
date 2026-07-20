@@ -8,6 +8,10 @@
   --color-text-secondary: #a0a0a0;
   --color-accent: #ff9a00;
   --color-accent-text: #111111;
+
+   /* ...existing vars... */
+   --color-bubble-user: var(--color-accent);
+   --color-bubble-user-text: var(--color-accent-text);
 }
 
 [data-theme='light'] {
@@ -19,6 +23,10 @@
   --color-text-secondary: #555555;
   --color-accent: #ff9a00;
   --color-accent-text: #111111;
+
+   /* ...existing vars... */
+   --color-bubble-user: var(--color-accent);
+   --color-bubble-user-text: #ffffff;
 }
 
 * {

@@ -1,11 +1,12 @@
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, nextTick } from 'vue'
 
 const models = ref([])
 const selectedModel = ref('')
 const userInput = ref('')
 const messages = ref([])
 const isStreaming = ref(false)
+const composerEl = ref(null) // reference to the <textarea> DOM element
 
 const theme = ref(localStorage.getItem('theme') || 'dark')
 
@@ -13,24 +14,35 @@ function applyTheme() {
   document.documentElement.setAttribute('data-theme', theme.value)
   localStorage.setItem('theme', theme.value)
 }
-
 function toggleTheme() {
   theme.value = theme.value === 'dark' ? 'light' : 'dark'
 }
-
 watch(theme, applyTheme)
 
 const API_BASE = 'http://localhost:8000'
 
 onMounted(async () => {
-  applyTheme() // apply saved/default theme as soon as the app loads
-
+  applyTheme()
   const res = await fetch(`${API_BASE}/api/models`)
   models.value = await res.json()
-  if (models.value.length > 0) {
-    selectedModel.value = models.value[0]
-  }
+  if (models.value.length > 0) selectedModel.value = models.value[0]
 })
+
+// Grows the textarea as the user types, capped at 160px
+function autoResizeComposer() {
+  const el = composerEl.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px'
+}
+
+// Enter sends, Shift+Enter makes a new line
+function handleComposerKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    if (!isStreaming.value && userInput.value.trim()) sendMessage()
+  }
+}
 
 async function sendMessage() {
   const text = userInput.value.trim()
@@ -38,6 +50,7 @@ async function sendMessage() {
 
   messages.value.push({ role: 'user', content: text })
   userInput.value = ''
+  await nextTick(autoResizeComposer) // reset textarea height after clearing
 
   const assistantMessage = reactive({ role: 'assistant', content: '' })
   messages.value.push(assistantMessage)
@@ -50,9 +63,7 @@ async function sendMessage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: selectedModel.value,
-        messages: messages.value
-          .slice(0, -1)
-          .map(m => ({ role: m.role, content: m.content })),
+        messages: messages.value.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
       }),
     })
 
@@ -71,16 +82,6 @@ async function sendMessage() {
     isStreaming.value = false
   }
 }
-
-// Handle Enter key for sending messages and Shift+Enter for new lines
-function handleComposerKey(event) {
-  if (event.key === 'Enter' && !event.shiftKey) {
-    event.preventDefault()
-    sendMessage()
-  }
-}
-
-
 </script>
 
 <template>
@@ -100,41 +101,37 @@ function handleComposerKey(event) {
       <div
         v-for="(msg, i) in messages"
         :key="i"
-        class="message"
-        :class="msg.role === 'user' ? 'message--user' : 'message--assistant'">
-        <span class="message-role">{{ msg.role === 'user' ? 'You' : selectedModel }}</span>
-        <p class="message-content">{{ msg.content }}</p>
+        class="message-wrap"
+        :class="msg.role === 'user' ? 'message-wrap--user' : 'message-wrap--assistant'">
+        <div class="bubble" :class="msg.role === 'user' ? 'bubble--user' : 'bubble--assistant'">
+          {{ msg.content }}
+        </div>
       </div>
     </div>
 
-    <form class="chat-form" @submit.prevent="sendMessage">
+    <div class="composer">
       <textarea
+        ref="composerEl"
         v-model="userInput"
-        type="text"
-        placeholder="Ask something..."
         @keydown="handleComposerKey"
         @input="autoResizeComposer"
-        class="chat-input"
+        placeholder="Ask something..."
+        rows="1"
+        class="composer-textarea"
         :disabled="isStreaming"></textarea>
-      <button type="submit" class="send-button" :disabled="isStreaming">
-        {{ isStreaming ? '...' : 'Send' }}
+      <button class="send-button" @click="sendMessage" :disabled="isStreaming || !userInput.trim()">
+        <div class="spinner" v-if="isStreaming"></div>
+        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+        </svg>
       </button>
-    </form>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.app {
-  max-width: 1100px;
-  margin: 40px auto;
-  padding: 0 16px;
-}
-
-.app-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+.app { max-width: 1000px; margin: 40px auto; padding: 0 16px; }
+.app-header { display: flex; align-items: center; justify-content: space-between; }
 
 .theme-toggle {
   background: var(--color-surface-alt);
@@ -160,67 +157,96 @@ function handleComposerKey(event) {
   border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 16px;
-  min-height: 600px;
+  min-height: 500px;
   max-height: 700px;
   overflow-y: auto;
-}
-
-.message {
-  margin-bottom: 14px;
-}
-
-.message-role {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--color-accent);
-}
-
-.message--user .message-role {
-  color: var(--color-text-secondary);
-}
-
-.message-content {
-  white-space: pre-wrap;
-  margin: 4px 0 0;
-  line-height: 1.5;
-}
-
-.chat-form {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Wrapper controls WHICH SIDE the bubble sits on */
+.message-wrap { display: flex; }
+.message-wrap--user { justify-content: flex-end; }
+.message-wrap--assistant { justify-content: flex-start; }
+
+/* Bubble itself doesn't care about side, just its own look */
+.bubble {
+  max-width: 78%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.bubble--user {
+  background: var(--color-bubble-user);
+  color: var(--color-bubble-user-text);
+  border-bottom-right-radius: 4px; /* small "tail" corner, like iMessage/ChatGPT */
+}
+
+.bubble--assistant {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+  border-bottom-left-radius: 4px;
+}
+
+/* Composer: rounded pill container, textarea + circular send button inside */
+.composer {
+  display: flex;
+  align-items: flex-end;
   gap: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 8px 8px 8px 14px;
   margin-top: 16px;
 }
 
-.chat-input {
+.composer-textarea {
   flex: 1;
-  background: var(--color-surface);
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
   color: var(--color-text);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 1rem;
-  min-height: 50px;
-  max-height: 80px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  line-height: 1.5;
+  min-height: 24px;
+  max-height: 160px;
   overflow-y: auto;
+  padding: 6px 0;
 }
 
-.chat-input:focus {
-  outline: none;
-  border-color: var(--color-accent);
-}
+.composer-textarea::placeholder { color: var(--color-text-secondary); }
 
 .send-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
   background: var(--color-accent);
   color: var(--color-accent-text);
   border: none;
-  border-radius: 8px;
-  padding: 10px 18px;
-  font-weight: 600;
   cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.1s ease;
 }
 
-.send-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.send-button:hover:not(:disabled) { transform: scale(1.05); }
+.send-button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: currentColor;
+  animation: spin 0.7s linear infinite;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>

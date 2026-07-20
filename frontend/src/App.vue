@@ -292,4 +292,28 @@ async function sendMessage() {
 
 .bubble :deep(strong) { font-weight: 700; }
 .bubble :deep(a) { color: var(--color-accent); }
+
+.bubble :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 0.85em;
+}
+
+.bubble :deep(th) {
+  text-align: left;
+  font-weight: 700;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-alt);
+}
+
+.bubble :deep(td) {
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+}
+
+.bubble :deep(tbody tr:nth-child(even) td) {
+  background: rgba(255, 255, 255, 0.03);
+}
 </style>

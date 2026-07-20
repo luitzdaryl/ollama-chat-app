@@ -1,5 +1,8 @@
 <script setup>
 import { ref, reactive, onMounted, watch, nextTick } from 'vue'
+import { marked } from 'marked'
+marked.setOptions({ breaks: true, gfm: true })
+
 
 const models = ref([])
 const selectedModel = ref('')
@@ -104,7 +107,12 @@ async function sendMessage() {
         class="message-wrap"
         :class="msg.role === 'user' ? 'message-wrap--user' : 'message-wrap--assistant'">
         <div class="bubble" :class="msg.role === 'user' ? 'bubble--user' : 'bubble--assistant'">
-          {{ msg.content }}
+          <template v-if="msg.role === 'assistant'">
+            <span v-html="marked.parse(msg.content)"></span>
+          </template>
+          <template v-else>
+            {{ msg.content }}
+          </template>
         </div>
       </div>
     </div>
@@ -249,4 +257,39 @@ async function sendMessage() {
   animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+
+.bubble :deep(p) { margin: 0 0 8px; }
+.bubble :deep(p:last-child) { margin-bottom: 0; }
+
+.bubble :deep(code) {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+
+.bubble :deep(pre) {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 12px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.bubble :deep(pre code) {
+  background: none;
+  padding: 0;
+}
+
+.bubble :deep(ul),
+.bubble :deep(ol) {
+  margin: 6px 0;
+  padding-left: 20px;
+}
+
+.bubble :deep(strong) { font-weight: 700; }
+.bubble :deep(a) { color: var(--color-accent); }
 </style>

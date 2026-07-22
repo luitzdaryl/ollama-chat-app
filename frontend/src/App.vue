@@ -134,6 +134,7 @@ async function sendMessage() {
         </svg>
       </button>
     </div>
+    
   </div>
 </template>
 

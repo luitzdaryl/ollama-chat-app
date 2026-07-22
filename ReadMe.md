@@ -92,9 +92,3 @@ This app expects Ollama's API to be reachable at `http://localhost:11434` (Ollam
 
 MIT
 ```
-
-A couple of notes on what I put in there:
-- The **Roadmap** section flags Docker as "not done yet" — once we finish Step 6, we'll update this to a proper "Running with Docker" section instead.
-- I used **MIT** as a placeholder license since you haven't specified one — if you want something else (or no license at all) for the GitHub push, just say so and I'll adjust.
-
-Whenever you're ready, we can move on to **Dockerizing** the backend and frontend.

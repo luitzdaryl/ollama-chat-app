@@ -10,9 +10,9 @@ import uvicorn
 from fastapi import Request
 from fastapi.responses import StreamingResponse
 import json
+import os
 
-
-OLLAMA_BASE_URL = "http://localhost:11434"  # we'll make this configurable later for Docker
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 
 app = FastAPI(title="Ollama Chat Backend")
 

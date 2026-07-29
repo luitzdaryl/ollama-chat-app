@@ -14,6 +14,8 @@ import os
 
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 
+# OLLAMA_BASE_URL = "http://localhost:11434"  # we'll make this configurable later for Docker
+
 app = FastAPI(title="Ollama Chat Backend")
 
 # Allows our Vue frontend (different port) to call this API from the browser

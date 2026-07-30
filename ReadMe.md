@@ -92,3 +92,26 @@ This app expects Ollama's API to be reachable at `http://localhost:11434` (Ollam
 
 MIT
 ```
+## Running with Docker (recommended)
+
+The easiest way to run the full stack — no need to install Python or Node locally.
+
+**Prerequisites:** Docker Desktop installed and running, and Ollama running natively on your machine with at least one model pulled.
+
+From the project root:
+
+```bash
+docker compose up
+```
+
+This builds and starts both the backend (`http://localhost:8000`) and frontend (`http://localhost:8080`) together. Open `http://localhost:8080` in your browser once both containers report as started.
+
+To stop everything: `Ctrl+C`, or `docker compose down` from another terminal.
+
+> **Note:** The backend reaches your locally-running Ollama via `host.docker.internal`, Docker's built-in DNS name for the host machine — this is configured automatically in `docker-compose.yml`.
+
+## Roadmap
+
+- [x] Dockerize backend and frontend
+- [x] Docker Compose setup for one-command startup
+- [ ] Deployment instructions (cloud hosting)

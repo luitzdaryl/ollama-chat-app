@@ -118,4 +118,11 @@ To stop everything: `Ctrl+C`, or `docker compose down` from another terminal.
 
 > **Note:** The backend reaches your locally-running Ollama via `host.docker.internal`, Docker's built-in DNS name for the host machine — this is configured automatically in `docker-compose.yml`.
 
+
+## Roadmap
+
+- [x] Dockerize backend and frontend
+- [x] Docker Compose setup for one-command startup
+- [ ] Deployment instructions (cloud hosting)
+
 ```

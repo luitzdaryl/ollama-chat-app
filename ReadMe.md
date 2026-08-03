@@ -1,5 +1,3 @@
-Good call — having this ready now means you can update it incrementally as we add Docker and push to GitHub. Since you asked for it to paste yourself, here it is as a plain markdown block (not a file) — copy everything between the fences into `README.md` at your project root.
-
 ```markdown
 # Ollama Chat App
 

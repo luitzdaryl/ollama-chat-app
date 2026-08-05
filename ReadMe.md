@@ -1,4 +1,3 @@
-```markdown
 # Ollama Chat App
 
 A local chat interface for [Ollama](https://ollama.com) models, built with **FastAPI** (backend) and **Vue 3** (frontend). Streams responses live, lets you switch between any locally installed Ollama model, supports light/dark themes, and renders markdown (including tables and code blocks) in assistant replies.
@@ -122,5 +121,3 @@ To stop everything: `Ctrl+C`, or `docker compose down` from another terminal.
 - [x] Dockerize backend and frontend
 - [x] Docker Compose setup for one-command startup
 - [ ] Deployment instructions (cloud hosting)
-
-```

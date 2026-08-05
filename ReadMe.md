@@ -79,16 +79,6 @@ This app expects Ollama's API to be reachable at `http://localhost:11434` (Ollam
 - **Frontend:** Vue 3 (Composition API), Vite, marked (markdown rendering)
 - **Model runtime:** Ollama (external, run locally)
 
-## Roadmap
-
-- [ ] Dockerize backend and frontend
-- [ ] Docker Compose setup for one-command startup
-- [ ] Deployment instructions
-
-## License
-
-MIT
-
 ## Running with Docker (recommended)
 
 The easiest way to run the full stack — no need to install Python or Node locally.
@@ -121,3 +111,7 @@ To stop everything: `Ctrl+C`, or `docker compose down` from another terminal.
 - [x] Dockerize backend and frontend
 - [x] Docker Compose setup for one-command startup
 - [ ] Deployment instructions (cloud hosting)
+
+## License
+
+MIT
